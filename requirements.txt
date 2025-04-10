@@ -84,3 +84,7 @@ uv==0.6.1
 validators==0.34.0
 watchdog==6.0.0
 zipp==3.21.0
+
+
+streamlit==1.29.0
+cryptography==41.0.7
