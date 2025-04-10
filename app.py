@@ -26,17 +26,17 @@ def load_css():
             --text-light: #757575;
             --glass: rgba(255, 255, 255, 0.2);
         }
-        
+
         body {
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             color: var(--text);
         }
-        
+
         .main {
             background-color: transparent !important;
         }
-        
-        .stTextInput>div>div>input, 
+
+        .stTextInput>div>div>input,
         .stTextArea>div>div>textarea,
         .stSelectbox>div>div>select {
             border: 2px solid var(--primary) !important;
@@ -45,8 +45,15 @@ def load_css():
             background-color: white !important;
             color: var(--text) !important;
             box-shadow: 0 2px 10px rgba(30, 136, 229, 0.1);
+            font-weight: 500;
         }
-        
+
+        .stTextArea textarea,
+        .stTextInput input {
+            color: var(--text) !important;
+            background-color: #ffffff !important;
+        }
+
         .stButton>button {
             background-color: var(--primary) !important;
             color: white !important;
@@ -59,25 +66,23 @@ def load_css():
             width: 100% !important;
             margin: 5px 0 !important;
         }
-        
+
         .stButton>button:hover {
             background-color: var(--primary-dark) !important;
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 12px rgba(30, 136, 229, 0.3) !important;
         }
-        
+
         .stButton>button:focus {
             box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.5) !important;
         }
-        
-        /* Sidebar navigation buttons */
+
         .sidebar .stButton>button {
             margin: 8px 0 !important;
             text-align: left !important;
             padding-left: 20px !important;
         }
-        
-        /* Glass panel effect */
+
         .glass-panel {
             background: var(--glass) !important;
             backdrop-filter: blur(10px) !important;
@@ -88,8 +93,7 @@ def load_css():
             padding: 20px !important;
             margin-bottom: 20px !important;
         }
-        
-        /* Heading with glass effect */
+
         .glass-heading {
             background: linear-gradient(90deg, rgba(30, 136, 229, 0.7), rgba(30, 136, 229, 0.4)) !important;
             backdrop-filter: blur(5px) !important;
@@ -101,7 +105,7 @@ def load_css():
             margin-bottom: 25px !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
-        
+
         .app-title {
             font-size: 2.5rem;
             font-weight: 700;
@@ -112,14 +116,14 @@ def load_css():
             text-align: center;
             margin-bottom: 0.5rem;
         }
-        
+
         .app-subtitle {
             text-align: center;
             color: var(--primary-dark);
             margin-bottom: 2rem;
             font-size: 1.1rem;
         }
-        
+
         .success-box {
             padding: 15px;
             background-color: rgba(212, 237, 218, 0.8);
@@ -128,7 +132,7 @@ def load_css():
             margin: 10px 0;
             border-left: 4px solid #28a745;
         }
-        
+
         .error-box {
             padding: 15px;
             background-color: rgba(248, 215, 218, 0.8);
@@ -137,7 +141,7 @@ def load_css():
             margin: 10px 0;
             border-left: 4px solid #dc3545;
         }
-        
+
         .user-badge {
             padding: 8px 15px;
             background-color: var(--primary-light);
@@ -149,44 +153,34 @@ def load_css():
             margin-left: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
-        /* Fix for text visibility */
-        .stTextArea textarea, 
-        .stTextInput input {
-            color: var(--text) !important;
-        }
-        
-        /* Custom scrollbar */
+
         ::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
             border-radius: 10px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
         }
-        
-        /* Remove Streamlit default styling */
+
         .st-emotion-cache-1y4p8pa {
             padding: 2rem 1.5rem;
         }
-        
-        /* Sidebar styling */
+
         [data-testid="stSidebar"] {
             background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
-        
-        /* Hide the selectbox dropdown arrow */
+
         .stSelectbox>div>div>div>div>svg {
             display: none;
         }
@@ -194,6 +188,7 @@ def load_css():
     """, unsafe_allow_html=True)
 
 load_css()
+
 
 # Generate or load encryption key
 def get_key():
