@@ -5,7 +5,7 @@ import json
 import time
 from datetime import datetime, timedelta
 
-# page metadata
+# Page metadata
 st.set_page_config(
     page_title="SafeNote - Secure Data Manager",
     page_icon="🔒",
@@ -26,17 +26,17 @@ def load_css():
             --text-light: #757575;
             --glass: rgba(255, 255, 255, 0.2);
         }
-
+        
         body {
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             color: var(--text);
         }
-
+        
         .main {
             background-color: transparent !important;
         }
-
-        .stTextInput>div>div>input,
+        
+        .stTextInput>div>div>input, 
         .stTextArea>div>div>textarea,
         .stSelectbox>div>div>select {
             border: 2px solid var(--primary) !important;
@@ -45,15 +45,8 @@ def load_css():
             background-color: white !important;
             color: var(--text) !important;
             box-shadow: 0 2px 10px rgba(30, 136, 229, 0.1);
-            font-weight: 500;
         }
-
-        .stTextArea textarea,
-        .stTextInput input {
-            color: var(--text) !important;
-            background-color: #ffffff !important;
-        }
-
+        
         .stButton>button {
             background-color: var(--primary) !important;
             color: white !important;
@@ -66,23 +59,25 @@ def load_css():
             width: 100% !important;
             margin: 5px 0 !important;
         }
-
+        
         .stButton>button:hover {
             background-color: var(--primary-dark) !important;
             transform: translateY(-2px) !important;
             box-shadow: 0 6px 12px rgba(30, 136, 229, 0.3) !important;
         }
-
+        
         .stButton>button:focus {
             box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.5) !important;
         }
-
+        
+        /* Sidebar navigation buttons */
         .sidebar .stButton>button {
             margin: 8px 0 !important;
             text-align: left !important;
             padding-left: 20px !important;
         }
-
+        
+        /* Glass panel effect */
         .glass-panel {
             background: var(--glass) !important;
             backdrop-filter: blur(10px) !important;
@@ -93,7 +88,8 @@ def load_css():
             padding: 20px !important;
             margin-bottom: 20px !important;
         }
-
+        
+        /* Heading with glass effect */
         .glass-heading {
             background: linear-gradient(90deg, rgba(30, 136, 229, 0.7), rgba(30, 136, 229, 0.4)) !important;
             backdrop-filter: blur(5px) !important;
@@ -105,7 +101,7 @@ def load_css():
             margin-bottom: 25px !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
-
+        
         .app-title {
             font-size: 2.5rem;
             font-weight: 700;
@@ -116,14 +112,14 @@ def load_css():
             text-align: center;
             margin-bottom: 0.5rem;
         }
-
+        
         .app-subtitle {
             text-align: center;
             color: var(--primary-dark);
             margin-bottom: 2rem;
             font-size: 1.1rem;
         }
-
+        
         .success-box {
             padding: 15px;
             background-color: rgba(212, 237, 218, 0.8);
@@ -132,7 +128,7 @@ def load_css():
             margin: 10px 0;
             border-left: 4px solid #28a745;
         }
-
+        
         .error-box {
             padding: 15px;
             background-color: rgba(248, 215, 218, 0.8);
@@ -141,7 +137,7 @@ def load_css():
             margin: 10px 0;
             border-left: 4px solid #dc3545;
         }
-
+        
         .user-badge {
             padding: 8px 15px;
             background-color: var(--primary-light);
@@ -153,34 +149,44 @@ def load_css():
             margin-left: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
+        
+        /* Fix for text visibility */
+        .stTextArea textarea, 
+        .stTextInput input {
+            color: var(--text) !important;
+        }
+        
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
-
+        
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-
+        
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
             border-radius: 10px;
         }
-
+        
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
         }
-
+        
+        /* Remove Streamlit default styling */
         .st-emotion-cache-1y4p8pa {
             padding: 2rem 1.5rem;
         }
-
+        
+        /* Sidebar styling */
         [data-testid="stSidebar"] {
             background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
-
+        
+        /* Hide the selectbox dropdown arrow */
         .stSelectbox>div>div>div>div>svg {
             display: none;
         }
@@ -188,7 +194,6 @@ def load_css():
     """, unsafe_allow_html=True)
 
 load_css()
-
 
 # Generate or load encryption key
 def get_key():
@@ -199,7 +204,10 @@ def get_key():
 KEY = get_key()
 cipher = Fernet(KEY)
 
-# Initializing session state
+# Initialize session state
+if 'user_db' not in st.session_state:
+    st.session_state.user_db = {}
+
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
     st.session_state.current_user = None
@@ -215,7 +223,7 @@ if 'failed_attempts' not in st.session_state:
 if 'lockout_time' not in st.session_state:
     st.session_state.lockout_time = None
 
-# hash function
+# Hash function
 def hash_passkey(passkey):
     return hashlib.sha256(passkey.encode()).hexdigest()
 
@@ -225,28 +233,75 @@ def encrypt_data(text, passkey):
     return encrypted_text, hashed_passkey
 
 def decrypt_data(encrypted_text, passkey):
-    hashed_passkey = hash_passkey(passkey)
-    
-    if st.session_state.lockout_time and datetime.now() < st.session_state.lockout_time:
-        remaining_time = (st.session_state.lockout_time - datetime.now()).seconds
-        st.markdown(f'<div class="error-box">Account locked. Please try again in {remaining_time} seconds.</div>', unsafe_allow_html=True)
-        return None
-    
-    for entry_id, entry_data in st.session_state.stored_data.items():
-        if entry_data["encrypted_text"] == encrypted_text and entry_data["passkey"] == hashed_passkey:
+    try:
+        hashed_passkey = hash_passkey(passkey)
+        
+        if st.session_state.lockout_time and datetime.now() < st.session_state.lockout_time:
+            remaining_time = (st.session_state.lockout_time - datetime.now()).seconds
+            st.markdown(f'''
+            <div class="error-box">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5em;">🔒</span>
+                    <div>
+                        <strong>Account locked</strong><br>
+                        Please try again in {remaining_time} seconds
+                    </div>
+                </div>
+            </div>
+            ''', unsafe_allow_html=True)
+            return None
+        
+        for entry_id, entry_data in st.session_state.stored_data.items():
+            if entry_data["encrypted_text"] == encrypted_text and entry_data["passkey"] == hashed_passkey:
+                st.session_state.failed_attempts = 0
+                return cipher.decrypt(encrypted_text.encode()).decode()
+        
+        st.session_state.failed_attempts += 1
+        
+        if st.session_state.failed_attempts >= 3:
+            st.session_state.lockout_time = datetime.now() + timedelta(minutes=5)
+            st.markdown('''
+            <div class="error-box">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5em;">⛔</span>
+                    <div>
+                        <strong>Too many failed attempts!</strong><br>
+                        Your account has been locked for 5 minutes.
+                    </div>
+                </div>
+            </div>
+            ''', unsafe_allow_html=True)
             st.session_state.failed_attempts = 0
-            return cipher.decrypt(encrypted_text.encode()).decode()
-    
-    st.session_state.failed_attempts += 1
-    
-    if st.session_state.failed_attempts >= 3:
-        st.session_state.lockout_time = datetime.now() + timedelta(minutes=5)
-        st.markdown('<div class="error-box">Too many failed attempts. Account locked for 5 minutes.</div>', unsafe_allow_html=True)
-        st.session_state.failed_attempts = 0
-        time.sleep(1)
-        st.rerun()
-    
-    return None
+            time.sleep(1)
+            st.rerun()
+        else:
+            attempts_left = 3 - st.session_state.failed_attempts
+            st.markdown(f'''
+            <div class="error-box">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5em;">🔐</span>
+                    <div>
+                        <strong>Incorrect passkey!</strong><br>
+                        You have {attempts_left} attempt{'s' if attempts_left > 1 else ''} remaining.
+                    </div>
+                </div>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        return None
+    except Exception as e:
+        st.markdown(f'''
+        <div class="error-box">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.5em;">⚠️</span>
+                <div>
+                    <strong>Decryption failed!</strong><br>
+                    The data could not be decrypted. Please check your passkey.
+                </div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        return None
 
 def save_data():
     with open('encrypted_data.json', 'w') as f:
@@ -261,41 +316,152 @@ def load_data():
 
 load_data()
 
-# Login Page (will show first)
+# Login Page
 def login_page():
     st.markdown("""
     <div class='app-title'>SafeNote</div>
     <div class='app-subtitle'>Your personal encryption vault</div>
     """, unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown("<div class='glass-panel'>", unsafe_allow_html=True)
-        
-        st.markdown("<h2 style='text-align: center; color: var(--primary-dark);'>Login</h2>", unsafe_allow_html=True)
-        
-        if st.session_state.lockout_time and datetime.now() < st.session_state.lockout_time:
-            remaining_time = (st.session_state.lockout_time - datetime.now()).seconds
-            st.markdown(f'<div class="error-box">Account locked. Please try again in {remaining_time} seconds.</div>', unsafe_allow_html=True)
-        else:
-            st.session_state.lockout_time = None
+    tab1, tab2 = st.tabs(["Login", "Register"])
+    
+    with tab1:
+        with st.container():
+            st.markdown("<div class='glass-panel'>", unsafe_allow_html=True)
             
-            username = st.text_input("Username:", value="guest")
-            login_pass = st.text_input("Password:", type="password", value="password", key="master_pass")
+            st.markdown("<h2 style='text-align: center; color: var(--primary-dark);'>Login</h2>", unsafe_allow_html=True)
             
-            if st.button("Login", key="login_btn"):
-                st.session_state.authenticated = True
-                st.session_state.current_user = username
-                st.session_state.user_name = username.capitalize()
-                st.session_state.failed_attempts = 0
+            if st.session_state.lockout_time and datetime.now() < st.session_state.lockout_time:
+                remaining_time = (st.session_state.lockout_time - datetime.now()).seconds
+                st.markdown(f'''
+                <div class="error-box">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5em;">🔒</span>
+                        <div>
+                            <strong>Account locked</strong><br>
+                            Please try again in {remaining_time} seconds
+                        </div>
+                    </div>
+                </div>
+                ''', unsafe_allow_html=True)
+            else:
                 st.session_state.lockout_time = None
-                st.session_state.current_page = "Home"
-                st.markdown('<div class="success-box">✅ Login successful! Redirecting...</div>', unsafe_allow_html=True)
-                time.sleep(1)
-                st.rerun()
-        
-        st.markdown("</div>", unsafe_allow_html=True)
+                
+                username = st.text_input("Username:", key="login_username")
+                login_pass = st.text_input("Password:", type="password", key="login_pass")
+                
+                if st.button("Login", key="login_btn"):
+                    if username in st.session_state.user_db:
+                        hashed_input = hash_passkey(login_pass)
+                        if st.session_state.user_db[username]["password"] == hashed_input:
+                            st.session_state.authenticated = True
+                            st.session_state.current_user = username
+                            st.session_state.user_name = st.session_state.user_db[username]["name"]
+                            st.session_state.failed_attempts = 0
+                            st.session_state.lockout_time = None
+                            st.session_state.current_page = "Home"
+                            st.markdown('<div class="success-box">✅ Login successful! Redirecting...</div>', unsafe_allow_html=True)
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.session_state.failed_attempts += 1
+                            st.markdown('''
+                            <div class="error-box">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.5em;">❌</span>
+                                    <div>
+                                        <strong>Incorrect password!</strong><br>
+                                        Please try again
+                                    </div>
+                                </div>
+                            </div>
+                            ''', unsafe_allow_html=True)
+                    else:
+                        st.markdown('''
+                        <div class="error-box">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.5em;">🔍</span>
+                                <div>
+                                    <strong>User not found!</strong><br>
+                                    Please register first
+                                </div>
+                            </div>
+                        </div>
+                        ''', unsafe_allow_html=True)
+                    
+                    if st.session_state.failed_attempts >= 3:
+                        st.session_state.lockout_time = datetime.now() + timedelta(minutes=5)
+                        st.rerun()
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+    
+    with tab2:
+        with st.container():
+            st.markdown("<div class='glass-panel'>", unsafe_allow_html=True)
+            st.markdown("<h2 style='text-align: center; color: var(--primary-dark);'>Register</h2>", unsafe_allow_html=True)
+            
+            reg_username = st.text_input("Choose Username:", key="reg_username")
+            reg_name = st.text_input("Your Name:", key="reg_name")
+            reg_pass = st.text_input("Choose Password:", type="password", key="reg_pass")
+            reg_confirm_pass = st.text_input("Confirm Password:", type="password", key="reg_confirm_pass")
+            
+            if st.button("Register", key="reg_btn"):
+                if not reg_username or not reg_pass or not reg_confirm_pass:
+                    st.markdown('''
+                    <div class="error-box">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.5em;">⚠️</span>
+                            <div>
+                                <strong>All fields are required!</strong><br>
+                                Please fill in all registration fields
+                            </div>
+                        </div>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                elif reg_pass != reg_confirm_pass:
+                    st.markdown('''
+                    <div class="error-box">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.5em;">🔑</span>
+                            <div>
+                                <strong>Passwords don't match!</strong><br>
+                                Please make sure both passwords are identical
+                            </div>
+                        </div>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                elif reg_username in st.session_state.user_db:
+                    st.markdown('''
+                    <div class="error-box">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.5em;">🚫</span>
+                            <div>
+                                <strong>Username already exists!</strong><br>
+                                Please choose a different username
+                            </div>
+                        </div>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                else:
+                    st.session_state.user_db[reg_username] = {
+                        "name": reg_name,
+                        "password": hash_passkey(reg_pass)
+                    }
+                    st.markdown('''
+                    <div class="success-box">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.5em;">✅</span>
+                            <div>
+                                <strong>Registration successful!</strong><br>
+                                You can now login with your credentials
+                            </div>
+                        </div>
+                    </div>
+                    ''', unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
-# Sidebar buttons
+# Sidebar navigation
 def sidebar_nav():
     st.sidebar.markdown(f"""
     <div style='display: flex; align-items: center; margin-bottom: 30px;'>
@@ -366,9 +532,29 @@ def store_data_page():
         
         if st.form_submit_button("Encrypt & Store"):
             if not user_data or not passkey:
-                st.markdown('<div class="error-box">⚠️ Both fields are required!</div>', unsafe_allow_html=True)
+                st.markdown('''
+                <div class="error-box">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5em;">⚠️</span>
+                        <div>
+                            <strong>Both fields are required!</strong><br>
+                            Please enter data and a passkey
+                        </div>
+                    </div>
+                </div>
+                ''', unsafe_allow_html=True)
             elif passkey != confirm_passkey:
-                st.markdown('<div class="error-box">⚠️ Passkeys do not match!</div>', unsafe_allow_html=True)
+                st.markdown('''
+                <div class="error-box">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5em;">🔑</span>
+                        <div>
+                            <strong>Passkeys don't match!</strong><br>
+                            Please make sure both passkeys are identical
+                        </div>
+                    </div>
+                </div>
+                ''', unsafe_allow_html=True)
             else:
                 encrypted_text, hashed_passkey = encrypt_data(user_data, passkey)
                 entry_id = f"{st.session_state.current_user}_{len(st.session_state.stored_data) + 1}"
@@ -381,12 +567,17 @@ def store_data_page():
                 }
                 
                 save_data()
-                st.markdown(f"""
+                st.markdown(f'''
                 <div class="success-box">
-                    ✅ Data stored securely!<br>
-                    <small>Entry ID: {entry_id}</small>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5em;">✅</span>
+                        <div>
+                            <strong>Data stored securely!</strong><br>
+                            <small>Entry ID: {entry_id}</small>
+                        </div>
+                    </div>
                 </div>
-                """, unsafe_allow_html=True)
+                ''', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 # Retrieve Data Page
@@ -415,20 +606,22 @@ def retrieve_data_page():
                     decrypted_text = decrypt_data(encrypted_text, passkey)
                     
                     if decrypted_text:
-                        st.markdown(f"""
+                        st.markdown(f'''
                         <div class="success-box">
-                            ✅ Decryption successful!
-                            <div style='margin-top: 10px; padding: 10px; background-color: rgba(232, 244, 248, 0.8); border-radius: 5px; color: black;'>
-                                {decrypted_text}
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.5em;">✅</span>
+                                <div>
+                                    <strong>Decryption successful!</strong>
+                                    <div style='margin-top: 10px; padding: 10px; background-color: rgba(232, 244, 248, 0.8); border-radius: 5px; color: black;'>
+                                        {decrypted_text}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        attempts_left = max(0, 3 - st.session_state.failed_attempts)
-                        st.markdown(f'<div class="error-box">❌ Incorrect passkey! Attempts remaining: {attempts_left}</div>', unsafe_allow_html=True)
+                        ''', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# Main App (after login)
+# Main App
 def main_app():
     sidebar_nav()
     
